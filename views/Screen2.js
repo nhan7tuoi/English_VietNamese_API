@@ -11,21 +11,15 @@ export default function Screen2({ navigation, route }) {
   const [userLocal, setUserLocal] = useState({});
   const [english, setEnglish] = useState('');
   const [vietnamese, setVietnamese] = useState('');
-
-  // Use local state for data
   const [data, setData] = useState([]);
   const [selectedVocabulary, setSelectedVocabulary] = useState(null);
-
   useEffect(() => {
     const fetchData = async () => {
       store.dispatch(setUser(route.params.user));
       setUserLocal(route.params.user);
     };
-
     fetchData();
   }, [route.params.user]);
-
-  // useEffect to update local state when Redux state changes
   useEffect(() => {
     const englishState = store.getState().english;
     const vietnameseState = store.getState().vietnamese;
@@ -35,7 +29,6 @@ export default function Screen2({ navigation, route }) {
       content: item,
       translation: vietnameseState[index],
     }));
-
     setData(newData);
   }, [store.getState().english, store.getState().vietnamese]);
 
@@ -44,29 +37,27 @@ export default function Screen2({ navigation, route }) {
     setEnglish('');
     setVietnamese('');
   };
-
   const handleDeleteVocabulary = (id) => {
+    const deleteData = data.filter(item => item.id === id);
+    console.log(deleteData);
     const updatedData = data.filter(item => item.id !== id);
     setData(updatedData);
-    store.dispatch(deleteVocabulary(id));
+    store.dispatch(deleteVocabulary(deleteData[0].content.id));
   };
-
   const handleUpdateVocabulary = () => {
     if (selectedVocabulary) {
-      console.log('Current Redux State before update:', store.getState());
-      // Update Redux state
       store.dispatch(
-        updateVocabulary(selectedVocabulary.id, english, vietnamese)
+        updateVocabulary(selectedVocabulary.content.id, english, vietnamese)
       );
-      console.log('Current Redux State after update:', store.getState());
-      // Update local state
       const updatedData = data.map((item) =>
         item.id === selectedVocabulary.id
           ? { ...item, content: { content: english }, translation: { content: vietnamese } }
           : item
       );
       setData(updatedData);
-      // Clear selected vocabulary after update
+      setSelectedVocabulary(null);
+      setEnglish('');
+      setVietnamese('');
       setSelectedVocabulary(null);
     }
   };
@@ -81,11 +72,8 @@ export default function Screen2({ navigation, route }) {
         },
         body: JSON.stringify(updatedUser),
       });
-
       if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
+        throw new Error('Network response was not ok'); }
       const updatedUserData = await response.json();
       alert('Đồng bộ dữ liệu lên API thành công');
     } catch (error) {
@@ -114,6 +102,9 @@ export default function Screen2({ navigation, route }) {
       <TouchableOpacity onPress={handleAddVocabulary} style={{ borderWidth: 1, marginTop: 10, marginBottom: 10, width: 50 }}>
         <Text>ADD</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => handleUpdateVocabulary()}  style={{ borderWidth: 1, marginTop: 10, marginBottom: 10, width: 50 }}>
+        Update
+      </TouchableOpacity>
 
       <View>
         <Text>LIST TỪ VỰNG</Text>
@@ -122,14 +113,12 @@ export default function Screen2({ navigation, route }) {
           renderItem={({ item }) => (
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => handleVocabularyPress(item)}>
-                <Text>{item.content.content}</Text>-
+                <Text>{item.content.content}</Text>
+                <Text> - </Text>
                 <Text>{item.translation.content}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => handleDeleteVocabulary(item.id)}>
                 <AntDesign name="delete" size={15} color="black" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleUpdateVocabulary(item.id)}>
-                <Entypo name="pencil" size={15} color="black" />
               </TouchableOpacity>
             </View>
           )}

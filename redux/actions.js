@@ -3,7 +3,7 @@ export const addVocabulary = (english, vietnamese) =>({ type: 'ADD_VOCABULARY', 
 export const deleteVocabulary = (id) => ({type: 'DELETE_VOCABULARY',id});
 export const updateVocabulary = (id, updatedContent, updatedTranslation) => ({
     type: 'UPDATE_VOCABULARY',
-    id: String(id),  // Ensure id is always treated as a string
+    id,
     updatedContent,
     updatedTranslation,
   });
